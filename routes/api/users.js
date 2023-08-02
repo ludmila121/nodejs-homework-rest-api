@@ -12,7 +12,22 @@ const {
   loginUser,
   currentUser,
   logoutUser,
+  avatarsUpdate,
 } = require("../../models/users");
+
+const multer = require("multer");
+const mime = require( "mime-types");
+const uuid = require("uuid");
+ const upload = multer({
+  storage: multer.diskStorage({
+    filename:(req, file, cb) => {
+      const extname = mime.extension(file.mimetype);
+      const filename = uuid.v4() + "." + extname;
+      cb(null, filename);
+    },
+    destination: "./tmp",
+  }),
+ });
 
 router.post(
   "/signup",
