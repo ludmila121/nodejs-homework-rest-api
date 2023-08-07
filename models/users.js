@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
 const Jimp = require("jimp");
 const fs = require("fs").promises;
+const sgMail = require ("@sendgrid/mail");
+const uuid = require("uuid");
 
 require("dotenv").config();
 
@@ -18,8 +20,27 @@ const signupUser = async (body) => {
     subscription,
     avatarURL: gravatar.url(email, {s: "100", r: "x", d: "retro"}, false),
   });
+  const verificationToken = uuid.v4();
+  
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  const msq = {
+    to: email, //Change to your recipient
+    from: "annsbchnk@gmail.com", //Change to your verified sender
+    subject: "Sending verification email",
+    text: `http://localhost:5500/api/users/verify/${verificationToken}`,
+    html: `<p>verification <a href="http://localhost:5500/api/users/verify/${verificationToken}">link</a></p>`
+  };
+  sgMail
+  .send(msg)
+  .then(() => {
+    console.log("Email sent");
+  })
+  .catch((error) => {
+    console.error(error);
+  });
   return isSingup;
 };
+
 
 const loginUser = async (body) => {
   const { email, password } = body;
