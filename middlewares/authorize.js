@@ -6,12 +6,15 @@ const { Unauthorized } = require("http-errors");
 const authorize = async (req, res, next) => {
   try {
     const { authorization } = req.headers;
-
+    
     if (!authorization) {
-      throw new Unauthorized("Not authorized");
+      res.status(401).json({
+        contentType:"application/json",
+        ResponseBody:{message:"Not authorized"},
+      });
     }
     const [bearer, token] = authorization.split(" ");
-    if (bearer !== "Bearer") {
+    if (bearer !== "Bearer" || !token) {
       throw new Unauthorized("Not authorized");
     }
     jwt.verify(token, JWT_SECRET);

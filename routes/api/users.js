@@ -1,5 +1,6 @@
 const express = require("express");
 const authorize = require("../../middlewares/authorize");
+const ctrl = require("../../controllers/auth");
 const {
   catchRegErrors,
   catchLogErrors,
@@ -7,58 +8,48 @@ const {
 } = require("../../middlewares/catchErrors");
 const { postAuthValidation } = require("../../middlewares/validationBody");
 const router = express.Router();  
-const {
-  signupUser,
-  loginUser,
-  currentUser,
-  logoutUser,
-} = require("../../models/users");
+
+const multer = require("multer");
+const mime = require( "mime-types");
+const uuid = require("uuid");
+ const upload = multer({
+  storage: multer.diskStorage({
+    filename:(req, file, cb) => {
+      const extname = mime.extension(file.mimetype);
+      const filename = uuid.v4() + "." + extname;
+      cb(null, filename);
+    },
+    destination: "./tmp",
+  }),
+ });
 
 router.post(
   "/signup",
   postAuthValidation,
-  catchRegErrors(async (req, res, next) => {
-    const user = await signupUser(req.body);
-    res.status(201).json({
-      contentType: "application/json",
-      ResponseBody: { user },
-    });
-  })
+  catchRegErrors()
 );
 router.post(
   "/login",
   postAuthValidation,
-  catchLogErrors(async (req, res, next) => {
-    const { token, email, subscription } = await loginUser(req.body);
-    res.status(201).json({
-      contentType: "application/json",
-      ResponseBody: {
-        user: {
-          email: email,
-          subscription: subscription,
-        },
-        token: token,
-      },
-    });
-  })
+  catchLogErrors(ctrl.login)
 );
 
 router.get(
   "/logout",
   authorize,
-  catchErrors(async (req, res, next) => {
-    await logoutUser(req.user.token);
-    res.sendStatus(204);
-  })
+  catchErrors(ctrl.logout)
 );
 
 router.get(
   "/current",
   authorize,
-  catchErrors(async (req, res, next) => {
-    const user = await currentUser(req.user.token);
-    res.status(200).send(user);
-  })
+  catchErrors(ctrl.getCurrent)
 );
+router.patch(
+  "/avatars",
+  authorize,
+  upload.single("avatar"),
+  catchErrors(ctrl.avatars)
+  );
 
 module.exports = router;
