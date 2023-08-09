@@ -5,6 +5,7 @@ const {
   catchRegErrors,
   catchLogErrors,
   catchErrors,
+  catchVerifyErrors,
 } = require("../../middlewares/catchErrors");
 const { postAuthValidation } = require("../../middlewares/validationBody");
 const router = express.Router();  
@@ -12,7 +13,9 @@ const router = express.Router();
 const multer = require("multer");
 const mime = require( "mime-types");
 const uuid = require("uuid");
- const upload = multer({
+const { verificationUser, verificationSecondUser } = require("../../models/users");
+ 
+const upload = multer({
   storage: multer.diskStorage({
     filename:(req, file, cb) => {
       const extname = mime.extension(file.mimetype);
@@ -52,4 +55,13 @@ router.patch(
   catchErrors(ctrl.avatars)
   );
 
+
+router.get(
+  "/verify/:verificationToken",
+  catchErrors(ctrl.verificationToken)
+);
+router.post(
+  "/verify/",
+  catchVerifyErrors(ctrl.verificationSecondUser)
+); 
 module.exports = router;
