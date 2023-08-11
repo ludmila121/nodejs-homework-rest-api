@@ -28,7 +28,7 @@ const signupUser = async (body) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msq = {
     to: email, //Change to your recipient
-    from: "annsbchnk@gmail.com", //Change to your verified sender
+    from: "ludmilka121@gmail.com", //Change to your verified sender
     subject: "Sending verification email",
     text: `http://localhost:5500/api/users/verify/${verificationToken}`,
     html: `<p>verification <a href="http://localhost:5500/api/users/verify/${verificationToken}">link</a></p>`,
@@ -111,7 +111,7 @@ const verificationSecondUser = async (body) => {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     const msg = {
     to: email, // Change to your recipient
-    from: "annsbchnk@gmail.com", // Change to your verified sender
+    from: "ludmilka121@gmail.com", // Change to your verified sender
     subject: "Sending  verification email",
     text: `http://localhost:5500/api/users/verify/${verificationToken}`,
     html: `<p>verification <a href="http://localhost:5500/api/users/verify/${verificationToken}">link</a></p>`,
