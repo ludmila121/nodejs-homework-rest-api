@@ -4,8 +4,10 @@ const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
 const Jimp = require("jimp");
 const fs = require("fs").promises;
-const sgMail = require ("@sendgrid/mail");
+//const sgMail = require ("@sendgrid/mail");
 const uuid = require("uuid");
+const nodemailer = require ("nodemailer");
+
 
 require("dotenv").config();
 
@@ -24,8 +26,40 @@ const signupUser = async (body) => {
   });
   
   const verificationToken = uuid.v4();
+
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.meta.ua',
+    port: 465,
+    secure: true,
+    auth: {
+        user: 'ludmilka121@meta.ua',
+        pass: 'META_PASSWORD'
+    }
+});
+const transport = nodemailer.createTransport(nodemailerConfig);
+const sgMail = {
+    to: email, //Change to your recipient
+    from: "ludmilka121@meta.ua", //Change to your verified sender
+    subject: "Sending verification email",
+    text: `http://localhost:5500/api/users/verify/${verificationToken}`,
+    html: `<p>verification <a href="http://localhost:5500/api/users/verify/${verificationToken}">link</a></p>`,
+  };
+
+  transport.sendMail(email)
+  .then(() =>{
+    console.log("Email sent")
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+  return isSingup;
+};
+
+ 
+
+
   
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  /* sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msq = {
     to: email, //Change to your recipient
     from: "ludmilka121@gmail.com", //Change to your verified sender
@@ -42,7 +76,7 @@ const signupUser = async (body) => {
     console.error(error);
   });
   return isSingup;
-};
+}; */
 
 const loginUser = async (body) => {
   const { email, password } = body;
@@ -111,7 +145,7 @@ const verificationSecondUser = async (body) => {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     const msg = {
     to: email, // Change to your recipient
-    from: "ludmilka121@gmail.com", // Change to your verified sender
+    from: "ludmilka121@meta.ua", // Change to your verified sender
     subject: "Sending  verification email",
     text: `http://localhost:5500/api/users/verify/${verificationToken}`,
     html: `<p>verification <a href="http://localhost:5500/api/users/verify/${verificationToken}">link</a></p>`,
