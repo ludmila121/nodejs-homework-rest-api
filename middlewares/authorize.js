@@ -1,7 +1,7 @@
-const jwt = require("jsonwebtoken");
 const { Users } = require("../db/usersModel");
 const { JWT_SECRET } = process.env;
 const { Unauthorized } = require("http-errors");
+const jwt = require("jsonwebtoken");
 
 const authorize = async (req, res, next) => {
   try {

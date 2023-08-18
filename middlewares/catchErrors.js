@@ -1,4 +1,4 @@
-module.exports.catchErrors = ctrl => {
+module.exports.catchErrors = (middleware) => {
   return async (req, res) => {
     try {
       await middleware(req, res);
@@ -7,7 +7,7 @@ module.exports.catchErrors = ctrl => {
     }
   };
 };
-module.exports.catchRegErrors = ctrl => {
+module.exports.catchRegErrors = (middleware) => {
   return async (req, res) => {
     try {
       await middleware(req, res);
