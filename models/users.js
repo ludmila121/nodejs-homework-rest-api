@@ -4,11 +4,16 @@ const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
 const Jimp = require("jimp");
 const fs = require("fs").promises;
+//const sgMail = require ("@sendgrid/mail");
+const uuid = require("uuid");
+const nodemailer = require ("nodemailer");
+
 
 require("dotenv").config();
 
 const signupUser = async (body) => {
   const { email, password, subscription } = body;
+  
   const isSingup = await Users.create({
     email,
     password: await bcryptjs.hash(
@@ -17,9 +22,61 @@ const signupUser = async (body) => {
     ),
     subscription,
     avatarURL: gravatar.url(email, {s: "100", r: "x", d: "retro"}, false),
+    verificationToken: uuid.v4(),
+  });
+  
+  const verificationToken = uuid.v4();
+
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.meta.ua',
+    port: 465,
+    secure: true,
+    auth: {
+        user: 'ludmilka121@meta.ua',
+        pass: 'META_PASSWORD'
+    }
+});
+const transport = nodemailer.createTransport(nodemailerConfig);
+const sgMail = {
+    to: email, //Change to your recipient
+    from: "ludmilka121@meta.ua", //Change to your verified sender
+    subject: "Sending verification email",
+    text: `http://localhost:5500/api/users/verify/${verificationToken}`,
+    html: `<p>verification <a href="http://localhost:5500/api/users/verify/${verificationToken}">link</a></p>`,
+  };
+
+  transport.sendMail(email)
+  .then(() =>{
+    console.log("Email sent")
+  })
+  .catch((error) => {
+    console.error(error);
   });
   return isSingup;
 };
+
+ 
+
+
+  
+  /* sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  const msq = {
+    to: email, //Change to your recipient
+    from: "ludmilka121@gmail.com", //Change to your verified sender
+    subject: "Sending verification email",
+    text: `http://localhost:5500/api/users/verify/${verificationToken}`,
+    html: `<p>verification <a href="http://localhost:5500/api/users/verify/${verificationToken}">link</a></p>`,
+  };
+  sgMail
+  .send(msg)
+  .then(() => {
+    console.log("Email sent");
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+  return isSingup;
+}; */
 
 const loginUser = async (body) => {
   const { email, password } = body;
@@ -53,7 +110,6 @@ const currentUser = async (token) => {
  
 const avatarsUpdate = async ( token, body) => {
   const {path, filename} = body;
-  console.log('filename', filename)
   const newFile = await Jimp.read(path)
   const newPath = "./public/avatars/" + filename;
   await newFile.resize(250, 250).writeAsync(newPath);  
@@ -67,6 +123,46 @@ const avatarsUpdate = async ( token, body) => {
   return user;
 };
 
+const verificationUser = async (verificationToken) => {
+  const user = await Users.findOneAndUpdate(
+    verificationToken,
+    {
+      verificationToken:null,
+      verify: true,
+    },
+
+    {new: true}
+  );
+  return user;
+};
+
+const verificationSecondUser = async (body) => {
+  const {email} = body;
+  const user = await Users.findOne({email});
+  if (!user.verify) {
+    const verificationToken = uuid.v4();
+
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    const msg = {
+    to: email, // Change to your recipient
+    from: "ludmilka121@meta.ua", // Change to your verified sender
+    subject: "Sending  verification email",
+    text: `http://localhost:5500/api/users/verify/${verificationToken}`,
+    html: `<p>verification <a href="http://localhost:5500/api/users/verify/${verificationToken}">link</a></p>`,
+  };
+    return await sgMail
+    .send(msg)
+    .then(() => {
+      console.log ("Email sent");
+      return true;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  } else {
+    return false;
+  }
+};
 
 module.exports = {
   signupUser,
@@ -74,4 +170,6 @@ module.exports = {
   logoutUser,
   currentUser,
   avatarsUpdate,
+  verificationUser,
+  verificationSecondUser,
 };

@@ -1,6 +1,5 @@
 const {Schema, model} = require("mongoose");
 
-
 const usersSchema = new Schema({
   password: {
     type: String,
@@ -23,6 +22,14 @@ const usersSchema = new Schema({
   avatarURL: {
     type: String,
     default: "",
+  },
+  verify:{
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    required: [true, 'Verify token is required'],
   },
 });
 
